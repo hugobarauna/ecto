@@ -36,8 +36,9 @@ Movie |> Ecto.Query.last() |> Repo.one()
 ```elixir
 query =
   from Movie,
-  where: [title: "Ready Player One"],
-  select: [:title, :tagline]
+    where: [title: "Ready Player One"],
+    select: [:title, :tagline]
+
 Repo.all(query)
 ```
 
@@ -46,8 +47,9 @@ Repo.all(query)
 ```elixir
 query =
   from m in Movie,
-  where: m.title == "Ready Player One",
-  select: [m.title, m.tagline]
+    where: m.title == "Ready Player One",
+    select: [m.title, m.tagline]
+
 Repo.all(query)
 ```
 
@@ -57,17 +59,19 @@ Repo.all(query)
 Movie
 |> where([m], m.title == "Ready Player One")
 |> select([m], {m.title, m.tagline})
-|> Repo.all
+|> Repo.all()
 ```
 
 ### Using where with interpolated values
 
 ```elixir
 title = "Ready Player One"
+
 query =
   from m in Movie,
-  where: m.title == ^title,
-  select: [m.title, m.tagline]
+    where: m.title == ^title,
+    select: [m.title, m.tagline]
+
 Repo.all(query)
 ```
 
@@ -77,8 +81,7 @@ Repo.all(query)
 ### Inserting a single record
 
 ```elixir
-%Person{name: "Bob"}
-|> Repo.insert()
+Repo.insert(%Person{name: "Bob"})
 ```
 
 ### Inserting multiple records
@@ -97,9 +100,10 @@ Repo.insert_all(Person, params)
 ```elixir
 person =
   Person
-  |> Ecto.Query.first
-  |> Repo.one
-changeset = change(person, %{age: 29})
+  |> Ecto.Query.first()
+  |> Repo.one()
+
+changeset = Ecto.Changeset.change(person, %{age: 29})
 Repo.update(changeset)
 ```
 
@@ -107,13 +111,10 @@ Repo.update(changeset)
 ```elixir
 person =
   Person
-  |> Ecto.Query.first
-  |> Repo.one
-changeset = cast(
-  person,
-  %{"age" => "29"},
-  [:age]
-)
+  |> Ecto.Query.first()
+  |> Repo.one()
+
+changeset = Ecto.Changeset.cast(person, %{"age" => "29"}, [:age])
 Repo.update(changeset)
 ```
 

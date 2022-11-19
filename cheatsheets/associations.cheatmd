@@ -162,9 +162,10 @@ movies = Repo.preload(movies, :characters)
 ```elixir
 query =
   from m in Movie,
-  join: c in Character,
-  on: m.id == c.movie_id,
-  preload: :characters
+    join: c in Character,
+    on: m.id == c.movie_id,
+    preload: :characters
+
 Repo.all(query)
 ```
 
@@ -173,8 +174,9 @@ Repo.all(query)
 ```elixir
 query =
   from m in Movie,
-  join: c in assoc(m, :characters),
-  preload: :characters
+    join: c in assoc(m, :characters),
+    preload: :characters
+
 Repo.all(query)
 ```
 
@@ -183,9 +185,11 @@ Repo.all(query)
 ### Inserting a child record to an existing parent
 
 ```elixir
-movie = Repo.get_by(Movie, title: "The Shawshank Redemption")
+new_character =
+  Movie
+  |> Repo.get_by(title: "The Shawshank Redemption")
+  |> Ecto.build_assoc(:characters, name: "Red", age: 60)
 
-new_character = Ecto.build_assoc(movie, :characters, name: "Red", age: 60)
 Repo.insert(new_character)
 ```
 
@@ -197,15 +201,15 @@ Repo.insert(new_character)
   title: "The Shawshank Redemption",
   release_date: ~D[1994-10-14]
 }
-|> change
-|> put_assoc(
+|> Ecto.Changeset.change()
+|> Ecto.Changeset.put_assoc(
   :characters,
   [
     %{name: "Andy Dufresne", age: 50},
     %{name: "Red", age: 60}
   ]
 )
-|> Repo.insert
+|> Repo.insert()
 ```
 
 #### Without using changeset
@@ -236,9 +240,9 @@ params = %{
 }
 
 %Movie{}
-|> cast(params, [:title, :release_date])
-|> cast_assoc(:characters)
-|> Repo.insert
+|> Ecto.Changeset.cast(params, [:title, :release_date])
+|> Ecto.Changeset.cast_assoc(:characters)
+|> Repo.insert()
 ```
 
 ## Updating associated records
@@ -247,14 +251,15 @@ params = %{
 
 ```elixir
 movie =
-  Repo.get_by(Movie, title: "The Shawshank Redemption")
+  Movie
+  |> Repo.get_by(title: "The Shawshank Redemption")
   |> Repo.preload(:characters)
 
-movie.characters |> Enum.map(&(&1.name)) |> IO.inspect
+movie.characters |> Enum.map(&(&1.name)) |> IO.inspect()
 #=> ["Andy Dufresne", "Red"]
 
-params = %{"characters" =>
-  [
+params = %{
+  "characters" => [
     %{"name" => "Captain Hadley"},
     %{"name" => "Brooks Hatlen"}
   ]
@@ -262,10 +267,10 @@ params = %{"characters" =>
 
 {:ok, movie} =
   movie
-  |> cast(params, [])
-  |> cast_assoc(:characters)
+  |> Ecto.Changeset.cast(params, [])
+  |> Ecto.Changeset.cast_assoc(:characters)
   |> Repo.update
 
-movie.characters |> Enum.map(&(&1.name)) |> IO.inspect
+movie.characters |> Enum.map(&(&1.name)) |> IO.inspect()
 #=> ["Captain Hadley", "Brooks Hatlen"]
 ```
